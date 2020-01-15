@@ -1,0 +1,154 @@
+{
+  "name": "ClassicApp",
+  "namespace": "ClassicApp",
+  "version": "1.0.0.0",
+  "framework": "ext",
+  "template": "classicdesktop",
+  "indexHtmlPath": "index.html",
+  "requires": [
+    "font-awesome"
+  ],
+
+  "builds": {
+    "desktop": {
+      "toolkit": "classic",
+      "theme": "theme-triton",
+      "sass": {
+        "generated": {
+          "var": "${build.id}/sass/save.scss",
+          "src": "${build.id}/sass/save"
+        }
+      }
+    }
+  },
+
+  "classpath": ["app/shared/src","app/${build.id}/src"],
+  "overrides": ["app/shared/overrides","app/${build.id}/overrides"],
+
+  "sass": {
+    "namespace": "ClassicApp",
+    "etc": [
+      "sass/etc/all.scss"
+    ],
+    "var": [
+      "app/shared/sass/var.scss",
+      "app/${build.id}/sass/var.scss"
+    ],
+    "src": [
+      "app/shared/src/sass/src.scss",
+      "app/${build.id}/sass/src.scss"
+    ]
+  },
+
+  "resources": [
+    { "path": "resources", "output": "shared" }
+
+    ,{ "path": "resources/${build.id}" }
+
+  ],
+
+  "output": {
+    "base": "${workspace.build.dir}/${build.environment}/${app.name}",
+    "page": "index.html",
+    "manifest": "generatedFiles/${build.id}.json",
+    "js": "generatedFiles/${build.id}/app.js",
+    "appCache": {"enable": false},
+    "resources": {
+      "path": "${build.id}/resources",
+      "shared": "resources"
+    }
+  },
+  
+  "fashion": {
+"missingParameters": "error",
+    "inliner": {"enable": false}
+  },
+
+  "js": [
+    {
+      "path": "app.js",
+      "bundle": true
+    },
+    {
+      "path": "https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js",
+      "remote": true
+    },
+    {
+      "path": "./app/desktop/js/Filters.js",
+      "bundle": true
+    },
+    {
+      "path": "./app/desktop/js/filter/Number.js",
+      "bundle": true
+    },
+    {
+      "path": "./app/desktop/js/filter/String.js",
+      "bundle": true
+    },
+    {
+      "path": "./app/desktop/js/filter/Date.js",
+      "bundle": true
+    }
+  ],
+
+  "classic": {"js": []},
+  "modern": {"js": []},
+
+  "css": [
+    {
+      "path": "${build.out.css.path}",
+      "bundle": true,
+      "exclude": ["fashion"]
+    }
+  ],
+  "loader": {
+    "cache": false,
+    "cacheParam": "_dc"
+  },
+  "production": {
+    "output": {
+      "appCache": {
+        "enable": true,
+        "path": "cache.appcache"
+      }
+    },
+    "loader": {
+      "cache": "${build.timestamp}"
+    },
+    "cache": {
+      "enable": true
+    },
+    "compressor": {
+      "type": "yui"
+    }
+  },
+  "testing": {},
+  "development": {
+    "watch": {
+      "delay": 250
+    }
+  },
+  "bootstrap": {
+    "base": "${app.dir}/generatedFiles",
+"manifest": "${build.id}.json",
+    "microloader": "bootstrap.js",
+    "css": "bootstrap.css"
+  },
+
+  "cache": {
+    "enable": false,
+    "deltas": "${build.id}/deltas"
+  },
+
+  "appCache": {
+    "cache": ["index.html"],
+    "network": ["*"],
+    "fallback": []
+  },
+
+
+  "archivePath": "archive/${build.id}",
+
+  "ignore": ["(^|/)CVS(/?$|/.*?$)"],
+  "id": "80cf3cc9-b00f-4ff4-b6ba-857f969b0ac1"
+}

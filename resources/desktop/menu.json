@@ -1,0 +1,20 @@
+{
+  "leaf": false,
+  "children": [
+    {
+      "text": "Progress",
+      "iconCls": "x-fa fa-list",
+      "xtype": "progressview",
+      "leaf": true
+    },
+    {
+      "text": "User",
+      "iconCls": "x-fa fa-list",
+      "xtype": "userview",
+      "leaf": true
+    },
+    {
+      "xtype": "Progressfrom"
+    }
+  ]
+}
