@@ -37,167 +37,158 @@
  * 
  */
 Ext.define('Ext.grid.filters.filter.Number', {
-    extend: 'Ext.grid.filters.filter.TriFilter',
-    alias: ['grid.filter.number', 'grid.filter.numeric'],
-
+    extend: 'Ext.grid.filters.filter.SingleFilter',   
+    alias: ['grid.filter.number', 'grid.filter.numeric'],    
     uses: ['Ext.form.field.Number'],
 
-    type: 'number',
+    type: 'string',
 
-    config: {
-        /**
-         * @cfg {Object} [fields]
-         * Configures field items individually. These properties override those defined
-         * by `{@link #itemDefaults}`.
-         *
-         * Example usage:
-         *
-         *      fields: {
-         *          // Override itemDefaults for one field:
-         *          gt: {
-         *              width: 200
-         *          }
-         *
-         *          // "lt" and "eq" fields retain all itemDefaults
-         *      },
-         */
-        fields: {
-            // gt: {
-            //     // iconCls: Ext.baseCSSPrefix + 'grid-filters-gt',
-            //     // margin: '0 0 3px 0'
-            // },
-            // lt: {
-            //     // iconCls: Ext.baseCSSPrefix + 'grid-filters-lt',
-            //     // margin: '0 0 3px 0'
-            // },
-            // eq: {
-            //     // iconCls: Ext.baseCSSPrefix + 'grid-filters-eq',
-            //     // margin: 0
-            // }
-        }
-    },
+    operator: 'eq',
 
     /**
      * @cfg {String} emptyText
      * The empty text to show for each field.
      * @locale
      */
-    // emptyText: 'Search Number...',
+    emptyText: 'Search Filter Number...',
 
-    // itemDefaults: {
-    //     xtype: 'numberfield',
-    //     enableKeyEvents: true,
-    //     // hideEmptyLabel: false,
-    //     labelSeparator: '',
-    //     labelWidth: 29,
-    //     selectOnFocus: false
-    // },
+    itemDefaults: {
+        xtype: 'textfield',
+        enableKeyEvents: true,
+        // hideEmptyLabel: false,
+        // iconCls: Ext.baseCSSPrefix + 'grid-filters-find',
+        labelSeparator: '',
+        labelWidth: 29,
+        margin: 0,
+        selectOnFocus: true
+    },
 
     menuDefaults: {
         // A menu with only form fields needs some body padding. Normally this padding
         // is managed by the items, but we have no normal menu items.
         bodyPadding: 3,
-        margin: 0,
-        // showSeparator: false
-    },
-
-    createMenu: function () {
-        var me = this
-        //     ,listeners = {
-        //         scope: me,
-        //         keyup: me.onValueChange,
-        //         spin: {
-        //             fn: me.onInputSpin,
-        //             buffer: 200
-        //         },
-        //         el: {
-        //             click: me.stopFn
-        //         }
-        //     },
-        //     itemDefaults = me.getItemDefaults(),
-        //     menuItems = me.menuItems,
-        //     fields = me.getFields(),
-        //     field, i, len, key, item, cfg;
-
-        me.callParent();
-
-        // me.fields = {};
-        // for (i = 0, len = menuItems.length; i < len; i++) {
-        //     key = menuItems[i];
-
-        //     if (key !== '-') {
-        //         field = fields[key];
-
-        //         cfg = {
-        //             labelClsExtra: Ext.baseCSSPrefix + 'grid-filters-icon ' + field.iconCls
-        //         };
-
-        //         if (itemDefaults) {
-        //             Ext.merge(cfg, itemDefaults);
-        //         }
-
-        //         Ext.merge(cfg, field);
-        //         cfg.emptyText = cfg.emptyText || me.emptyText;
-        //         delete cfg.iconCls;
-
-        //         me.fields[key] = item = me.menu.add(cfg);
-
-        //         item.filter = me.filter[key];
-        //         item.filterKey = key;
-        //         item.on(listeners);
-        //     }
-        //     else {
-        //         me.menu.add(key);
-        //     }
-        // }
-
-        this.inputItem = Ext.create('Ext.form.field.Text',
-            {
-                bodyPadding: 3,
-                margin: 0
-            });
-        this.inputItem.emptyText = 'Search Number...';
-        this.menu.add(this.inputItem);
-        var checkboxItem = Ext.create('Ext.menu.CheckItem', {
-            text: 'Empty',
-            hideOnClick: false,
-            value: 'Empty',
-            // listeners: listeners,
-            scope: this
-        })
-        var checkboxItem2 = Ext.create('Ext.menu.CheckItem', {
-            text: 'Not Empty',
-            hideOnClick: false,
-            value: 'Not Empty',
-            // listeners: listeners,
-            scope: this
-        })
-        me.menu.add(checkboxItem);
-        me.menu.add(checkboxItem2);
-    },
-
-    getValue: function (field) {
-        var value = {};
-
-        value[field.filterKey] = field.getValue();
-
-        return value;
+        showSeparator: false
     },
 
     /**
      * @private
-     * Handler method called when there is a spin event on a NumberField
-     * item of this menu.
+     * Template method that is to initialize the filter and install required menu items.
      */
-    onInputSpin: function (field, direction) {
-        var value = {};
+    createMenu: function () {
+        var me = this, config;
+        me.callParent();
 
-        value[field.filterKey] = field.getValue();
+        config = Ext.apply({}, me.getItemDefaults());
 
-        this.setValue(value);
+        if (config.iconCls && !('labelClsExtra' in config)) {
+            config.labelClsExtra = Ext.baseCSSPrefix + 'grid-filters-icon ' + config.iconCls;
+        }
+
+        delete config.iconCls;
+
+        config.emptyText = config.emptyText || me.emptyText;
+        me.inputItem = me.menu.add(config);
+
+        listeners = {
+            checkchange: me.checkChange,
+            scope: me
+        };
+        this.checkboxItem = Ext.create('Ext.menu.CheckItem', {
+            text: 'Empty',
+            hideOnClick: false,
+            value: 'Empty',
+            listeners: listeners,
+            scope: this
+        })
+        this.checkboxItem2 = Ext.create('Ext.menu.CheckItem', {
+            text: 'Not Empty',
+            hideOnClick: false,
+            value: 'Not Empty',
+            listeners: listeners,
+            scope: this
+        })
+        this.menu.add(this.checkboxItem);
+        this.menu.add(this.checkboxItem2);
+        this.updateTask = Ext.create('Ext.util.DelayedTask', this.fireUpdate, this);
+        me.inputItem.on({
+            scope: me,
+            keyup: me.onValueChange,
+            el: {
+                click: function (e) {
+                    e.stopPropagation();
+                }
+            }
+        });
+    },
+    /**
+     * @private
+     * Template method that is to set the value of the filter.
+     * @param {Object} value The value to set the filter.
+     */
+    setValue: function (value) {
+        var me = this;
+
+        if (me.inputItem) {
+            me.inputItem.setValue(value);
+        }
+
+        me.filter.setValue(value);
+
+        if (value && me.active) {
+            me.value = value;
+            me.updateStoreFilter();
+        }
+        else {
+            me.setActive(!!value);
+        }
+    },
+    /**
+     * @private
+     * Template method that is to return <tt>true</tt> if the filter
+     * has enough configuration information to be activated.
+     * @return {Boolean}
+     */
+    checkChange: function (item, checked, field) {
+        if (item.checked) {
+            this.isActivatable(item.value, field)
+        } else {
+            this.isActivatable(false, field)
+        }
     },
 
-    stopFn: function (e) {
-        e.stopPropagation();
-    }
+    isActivatable: function (checked, field) {
+        var text = '';
+        if (checked === 'Empty') {
+            this.inputItem.setValue('Empty');
+            this.checkboxItem2.setChecked(false);
+            text = 'Empty';
+        } else if (checked === 'Not Empty') {
+            this.inputItem.setValue('Not Empty');
+            this.checkboxItem.setChecked(false);
+            text = 'Not Empty';
+        } else {
+            this.inputItem.setValue('');
+            text = '';
+        }
+        this.setValue(text);
+    },
+
+    activateMenu: function () {
+        this.inputItem.setValue(this.filter.getValue());
+    },
+
+    createFilter: function (config, key) {
+        var me = this;
+
+        if (me.filterFn) {
+            return new Ext.util.Filter({
+                filterFn: function (rec) {
+                    return Ext.callback(me.filterFn, me.scope, [rec, me.inputItem.getValue()]);
+                }
+            });
+        }
+        else {
+            return me.callParent([config, key]);
+        }
+    },
 });

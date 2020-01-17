@@ -86,9 +86,7 @@ Ext.define('Ext.grid.filters.filter.String', {
      * Template method that is to initialize the filter and install required menu items.
      */
     createMenu: function () {
-        var me = this,
-            config;
-
+        var me = this, config;
         me.callParent();
 
         config = Ext.apply({}, me.getItemDefaults());
@@ -110,23 +108,18 @@ Ext.define('Ext.grid.filters.filter.String', {
             text: 'Empty',
             hideOnClick: false,
             value: 'Empty',
-            // listeners: listeners,
+            listeners: listeners,
             scope: this
         })
         this.checkboxItem2 = Ext.create('Ext.menu.CheckItem', {
             text: 'Not Empty',
             hideOnClick: false,
             value: 'Not Empty',
-            // listeners: listeners,
+            listeners: listeners,
             scope: this
         })
         this.menu.add(this.checkboxItem);
         this.menu.add(this.checkboxItem2);
-
-        // this.checkboxItem.addEvents('checkchange');
-        // this.checkboxItem2.addEvents('checkchange');
-        this.checkboxItem.on('checkchange', this.onCheckChange, this);
-        this.checkboxItem2.on('checkchange', this.onCheckChange, this);
         this.updateTask = Ext.create('Ext.util.DelayedTask', this.fireUpdate, this);
         me.inputItem.on({
             scope: me,
@@ -137,16 +130,6 @@ Ext.define('Ext.grid.filters.filter.String', {
                 }
             }
         });
-    },
-    checkChange: function (item, checked) {
-        // if (item.checked) {
-        //     this.fireEvent('checkchange', item, checked);
-        // }
-        console.log(item)
-        console.log(checked)
-    },
-    onCheckChange: function () {
-        this.updateTask.delay(this.updateBuffer);
     },
     /**
      * @private
@@ -169,6 +152,36 @@ Ext.define('Ext.grid.filters.filter.String', {
         else {
             me.setActive(!!value);
         }
+    },
+    /**
+     * @private
+     * Template method that is to return <tt>true</tt> if the filter
+     * has enough configuration information to be activated.
+     * @return {Boolean}
+     */
+    checkChange: function (item, checked, field) {
+        if (item.checked) {
+            this.isActivatable(item.value, field)
+        } else {
+            this.isActivatable(false, field)
+        }
+    },
+
+    isActivatable: function (checked, field) {
+        var text = '';
+        if (checked === 'Empty') {
+            this.inputItem.setValue('Empty');
+            this.checkboxItem2.setChecked(false);
+            text = 'Empty';
+        } else if (checked === 'Not Empty') {
+            this.inputItem.setValue('Not Empty');
+            this.checkboxItem.setChecked(false);
+            text = 'Not Empty';
+        } else {
+            this.inputItem.setValue('');
+            text = '';
+        }
+        this.setValue(text);
     },
 
     activateMenu: function () {

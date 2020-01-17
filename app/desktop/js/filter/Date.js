@@ -80,7 +80,9 @@ Ext.define('Ext.grid.filters.filter.Date', {
         fields: {
             lt: { text: 'Before' },
             gt: { text: 'After' },
-            eq: { text: 'On' }
+            eq: { text: 'On' },
+            // em: { text: 'empty' },
+            // no: { text: 'not empty' }
         },
 
         /**
@@ -124,7 +126,7 @@ Ext.define('Ext.grid.filters.filter.Date', {
      * Defaults to undefined.
      */
 
-    applyDateFormat: function(dateFormat) {
+    applyDateFormat: function (dateFormat) {
         return dateFormat || Ext.Date.defaultFormat;
     },
 
@@ -132,7 +134,7 @@ Ext.define('Ext.grid.filters.filter.Date', {
      * @private
      * Template method that is to initialize the filter and install required menu items.
      */
-    createMenu: function(config) {
+    createMenu: function (config) {
         var me = this,
             listeners = {
                 scope: me,
@@ -186,29 +188,61 @@ Ext.define('Ext.grid.filters.filter.Date', {
                 field = me.fields[key] = item.down('datepicker');
                 field.filter = me.filter[key];
                 field.filterKey = key;
-
                 item.on(listeners);
             }
             else {
                 me.menu.add(key);
             }
         }
-        var checkboxItem = Ext.create('Ext.menu.CheckItem', {
+        listeners = {
+            checkchange: me.checkChange,
+            scope: me
+        };
+        this.checkboxItem = Ext.create('Ext.menu.CheckItem', {
             text: 'Empty',
             hideOnClick: false,
             value: 'Empty',
-            // listeners: listeners,
+            listeners: listeners,
             scope: this
         })
-        var checkboxItem2 = Ext.create('Ext.menu.CheckItem', {
+        this.checkboxItem2 = Ext.create('Ext.menu.CheckItem', {
             text: 'Not Empty',
             hideOnClick: false,
             value: 'Not Empty',
-            // listeners: listeners,
+            listeners: listeners,
             scope: this
         })
-        me.menu.add(checkboxItem);
-        me.menu.add(checkboxItem2);
+        this.menu.add(this.checkboxItem);
+        this.menu.add(this.checkboxItem2);
+        this.updateTask = Ext.create('Ext.util.DelayedTask', this.fireUpdate, this);
+    },
+    /**
+     * @private
+     * Template method that is to return <tt>true</tt> if the filter
+     * has enough configuration information to be activated.
+     * @return {Boolean}
+     */
+    checkChange: function (item, checked, field) {
+        if (item.checked) {
+            this.isActivatable(item.value, field)
+        }
+    },
+
+    isActivatable: function (checked, field) {
+        var value = {};
+        this.fields['lt'].up('menuitem').setChecked(false, false);
+        this.fields['gt'].up('menuitem').setChecked(false, false);
+        this.fields['eq'].up('menuitem').setChecked(false, false);
+        if (checked === 'Empty') {
+            this.checkboxItem2.setChecked(false);
+            value['eq'] = "16/01/2020"
+            this.setValue(value);
+        } else if (checked === 'Not Empty') {
+            this.checkboxItem.setChecked(false);
+            value['eq'] = "16/01/2020"
+            this.setValue(value);
+        }
+
     },
 
     /**
@@ -216,7 +250,7 @@ Ext.define('Ext.grid.filters.filter.Date', {
      * @param {String} item The field identifier ('lt', 'gt', 'eq')
      * @return {Object} The menu picker
      */
-    getPicker: function(item) {
+    getPicker: function (item) {
         return this.fields[item];
     },
 
@@ -224,7 +258,7 @@ Ext.define('Ext.grid.filters.filter.Date', {
      * @private
      * Remove the filter from the store but don't update its value or the field UI.
     */
-    onCheckChange: function(field, checked) {
+    onCheckChange: function (field, checked) {
         // Only do something if unchecked.  If checked, it doesn't mean anything at this point
         // since the column's store filter won't have any value (i.e., if a user checked this
         // from an unchecked state, the corresponding field won't have a value for its filter).
@@ -243,7 +277,7 @@ Ext.define('Ext.grid.filters.filter.Date', {
         }
     },
 
-    onFilterRemove: function(operator) {
+    onFilterRemove: function (operator) {
         var v = {};
 
         v[operator] = null;
@@ -251,12 +285,12 @@ Ext.define('Ext.grid.filters.filter.Date', {
         this.fields[operator].up('menuitem').setChecked(false, /* suppressEvents */ true);
     },
 
-    onStateRestore: function(filter) {
+    onStateRestore: function (filter) {
         filter.setSerializer(this.getSerializer());
         filter.setConvert(this.convertDateOnly);
     },
 
-    getFilterConfig: function(config, key) {
+    getFilterConfig: function (config, key) {
         config = this.callParent([config, key]);
         config.serializer = this.getSerializer();
         config.convert = this.convertDateOnly;
@@ -264,22 +298,20 @@ Ext.define('Ext.grid.filters.filter.Date', {
         return config;
     },
 
-    convertDateOnly: function(v) {
+    convertDateOnly: function (v) {
         var result = null;
 
         if (v) {
             result = Ext.Date.clearTime(v, true).getTime();
         }
-
         return result;
     },
 
-    getSerializer: function() {
+    getSerializer: function () {
         var me = this;
 
-        return function(data) {
+        return function (data) {
             var value = data.value;
-
             if (value) {
                 data.value = Ext.Date.format(value, me.getDateFormat());
             }
@@ -291,7 +323,7 @@ Ext.define('Ext.grid.filters.filter.Date', {
      * @param {Ext.picker.Date} picker
      * @param {Object} date
      */
-    onMenuSelect: function(picker, date) {
+    onMenuSelect: function (picker, date) {
         var me = this,
             fields = me.fields,
             filters = me.filter,
@@ -299,6 +331,8 @@ Ext.define('Ext.grid.filters.filter.Date', {
             gt = fields.gt,
             lt = fields.lt,
             eq = fields.eq,
+            // em = fields.em,
+            // no = fields.no,
             v = {};
 
         field.up('menuitem').setChecked(true, /* suppressEvents */ true);
@@ -336,7 +370,6 @@ Ext.define('Ext.grid.filters.filter.Date', {
 
         v[field.filterKey] = date;
         me.setValue(v);
-
         picker.up('menu').hide();
     }
 });
